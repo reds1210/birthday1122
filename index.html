@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平安長大</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #fdf6e3; /* 溫暖的米黃色 */
+            --card-bg: #ffffff;
+            --text-color: #5d5d5d;
+            --accent-color: #ff9a9e; /* 柔和粉 */
+            --tape-color: rgba(255, 233, 174, 0.8);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            /* 增加一點紙張紋理的感覺 */
+            background-image: radial-gradient(#e6e1cf 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 420px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        /* 第一幕：信封風格 */
+        #start-screen {
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .envelope {
+            font-size: 100px;
+            line-height: 1;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
+
+        .click-hint {
+            color: #888;
+            font-size: 1rem;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* 第二幕：卡片內容 */
+        #main-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 30px 25px;
+            /* 稍微傾斜一點點，看起來像隨手放在桌上的卡片 */
+            transform: rotate(-1deg); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            position: relative;
+            max-height: 85vh;
+            overflow-y: auto; /* 如果文字太長可以捲動 */
+        }
+
+        /* 紙膠帶裝飾效果 */
+        .tape {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background-color: var(--tape-color);
+            opacity: 0.8;
+            transform: translateX(-50%) rotate(-2deg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 拍立得相框 */
+        .polaroid {
+            background: white;
+            padding: 10px 10px 30px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            width: 220px;
+            transform: rotate(2deg);
+            transition: transform 0.3s;
+        }
+        
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin: 10px 0;
+            font-weight: 700;
+        }
+
+        /* 內文設定 - 模仿信紙行距 */
+        .letter-body {
+            text-align: left;
+            color: var(--text-color);
+            font-size: 1.05rem;
+            line-height: 2;
+            margin-top: 20px;
+            white-space: pre-line;
+        }
+
+        .music-control {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <div id="start-screen" onclick="openLetter()">
+            <div class="envelope">💌</div>
+            <div class="click-hint">給悅寧的一封信</div>
+        </div>
+
+        <div id="main-content">
+            <div class="tape"></div>
+
+            <div class="polaroid">
+                <img id="slideshow-img" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&auto=format&fit=crop&q=60" alt="Memories">
+            </div>
+
+            <h1>Happy Birthday!</h1>
+
+            <div class="letter-body">
+今天是小壽星 梁悅寧 的生日 🎂
+
+一直記得妳給我看的那些相簿照片，去年 K2 那個還有一點圓滾滾、站在鏡頭前有點拘謹的悅寧
+到現在要上 K3、準備穿畢業袍去 studio 拍照
+不知不覺又長高了、腳也變長了，
+早上牽著媽媽快步走去學校，努力跟上妳的步伐。
+
+有時候穿鞋子慢吞吞，把妳急得在門口快生氣，
+偶爾半夜咳醒，讓妳心疼又累，
+但最後還是準時到校、也在妳身邊睡得超沉，
+這些小小「惡行」加起來，
+都是悅寧很有生命力的一部分。
+
+悅寧：
+「生日快樂呀小壽星 🎂謝謝妳一直努力長大
+也謝謝妳陪著媽媽，一起經歷那麼多忙亂又好笑的早晨。
+希望妳新的一年
+可以少咳一點、睡得更安穩，上學開開心心，
+回家一樣可以偶爾讓媽媽頭痛、
+但永遠是大家很喜歡的那個小怪獸。」
+
+也想跟妳說：
+這些關於悅寧的小故事，我都記得。
+妳真的把她照顧得很好。
+今天不只是悅寧的生日，
+也是妳當媽媽又撐過一年的日子，
+兩個壽星都要被好好對待一下 ❤️
+
+願母女平安、健康、快樂。
+
+            </div>
+
+            <div class="music-control" onclick="toggleMusic()">🎵 背景音樂開關</div>
+        </div>
+    </div>
+
+    <script>
+        // 設定照片清單 (請將這裡換成你真實的照片檔名)
+        // 建議找：小時候的照片、全家福、最近的合照
+        const photos = [
+            "p1.jpg", 
+            "p2.jpg", 
+            "p3.jpg",
+            "p4.jpg", 
+            "p5.jpg", 
+            "p6.jpg",
+            "p7.jpg", 
+            "p8.jpg", 
+            "p9.jpg",
+            "p10.jpg", 
+            "p11.jpg", 
+            "p12.jpg",
+            "p13.jpg", 
+            "p14.jpg", 
+            "p15.jpg",
+            "p16.jpg", 
+            "p17.jpg", 
+            "p18.jpg",
+            "p19.jpg", 
+            "p20.jpg"            
+        ];
+        
+        // 如果你還沒準備照片，程式會用預設圖片，不用擔心報錯
+        
+        let currentPhotoIndex = 0;
+        const imgElement = document.getElementById('slideshow-img');
+
+        function openLetter() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            
+            playMusic();
+            fireConfetti(); // 溫和的碎紙花
+            startSlideshow(); // 開始輪播照片
+        }
+
+        const audio = document.getElementById('bg-music');
+        let isPlaying = false;
+
+        function playMusic() {
+            audio.volume = 0.5; // 音量設一半，比較溫柔
+            audio.play().then(() => { isPlaying = true; })
+            .catch(() => console.log("需互動才能播放"));
+        }
+
+        function toggleMusic() {
+            if (isPlaying) { audio.pause(); isPlaying = false; }
+            else { audio.play(); isPlaying = true; }
+        }
+
+        // 簡單的照片輪播邏輯
+        function startSlideshow() {
+            // 如果使用者有放照片進去陣列，才執行輪播
+            if(photos.length > 0 && photos[0] !== "photo1.jpg") {
+                imgElement.src = photos[0]; // 先顯示第一張
+                
+                setInterval(() => {
+                    currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+                    imgElement.style.opacity = 0; // 淡出
+                    
+                    setTimeout(() => {
+                        imgElement.src = photos[currentPhotoIndex];
+                        imgElement.style.opacity = 1; // 淡入
+                    }, 300); // 等待淡出動畫
+                    
+                }, 3000); // 每 3 秒換一張
+            }
+        }
+        
+        // 添加淡入淡出 CSS
+        imgElement.style.transition = "opacity 0.5s ease-in-out";
+
+        function fireConfetti() {
+            var duration = 3000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff9a9e', '#fad0c4', '#fdfbfb'] // 改成柔和色系
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff9a9e', '#fad0c4', '#fdfbfb']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+</body>
+</html>
