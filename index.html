@@ -7,12 +7,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
+    <link rel="preload" as="image" href="p1.jpg">
+
     <style>
         :root {
-            --bg-color: #fdf6e3; /* 溫暖的米黃色 */
+            --bg-color: #fdf6e3;
             --card-bg: #ffffff;
             --text-color: #5d5d5d;
-            --accent-color: #ff9a9e; /* 柔和粉 */
+            --accent-color: #ff9a9e;
             --tape-color: rgba(255, 233, 174, 0.8);
         }
 
@@ -26,7 +28,6 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-color);
-            /* 增加一點紙張紋理的感覺 */
             background-image: radial-gradient(#e6e1cf 1px, transparent 1px);
             background-size: 20px 20px;
         }
@@ -39,7 +40,6 @@
             text-align: center;
         }
 
-        /* 第一幕：信封風格 */
         #start-screen {
             cursor: pointer;
             animation: float 3s ease-in-out infinite;
@@ -62,21 +62,18 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* 第二幕：卡片內容 */
         #main-content {
             display: none;
             background: var(--card-bg);
             padding: 30px 25px;
-            /* 稍微傾斜一點點，看起來像隨手放在桌上的卡片 */
             transform: rotate(-1deg); 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border-radius: 4px;
             position: relative;
             max-height: 85vh;
-            overflow-y: auto; /* 如果文字太長可以捲動 */
+            overflow-y: auto;
         }
 
-        /* 紙膠帶裝飾效果 */
         .tape {
             position: absolute;
             top: -15px;
@@ -90,15 +87,15 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 拍立得相框 */
         .polaroid {
             background: white;
-            padding: 10px 10px 30px 10px;
+            padding: 10px 10px 40px 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin: 20px auto;
-            width: 220px;
+            width: 240px;
             transform: rotate(2deg);
             transition: transform 0.3s;
+            position: relative;
         }
         
         .polaroid:hover {
@@ -107,9 +104,11 @@
 
         .polaroid img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
-            background-color: #f0f0f0;
+            background-color: #f8f8f8;
+            border: 1px solid #eee;
+            transition: opacity 0.8s ease-in-out;
         }
 
         h1 {
@@ -119,7 +118,6 @@
             font-weight: 700;
         }
 
-        /* 內文設定 - 模仿信紙行距 */
         .letter-body {
             text-align: left;
             color: var(--text-color);
@@ -151,14 +149,14 @@
     <div class="container">
         <div id="start-screen" onclick="openLetter()">
             <div class="envelope">💌</div>
-            <div class="click-hint">給悅寧的一封信</div>
+            <div class="click-hint">給悅寧的一封信 (點擊開啟)</div>
         </div>
 
         <div id="main-content">
             <div class="tape"></div>
 
             <div class="polaroid">
-                <img id="slideshow-img" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&auto=format&fit=crop&q=60" alt="Memories">
+                <img id="slideshow-img" src="p1.jpg" alt="Memories">
             </div>
 
             <h1>Happy Birthday!</h1>
@@ -193,7 +191,6 @@
 兩個壽星都要被好好對待一下 ❤️
 
 願母女平安、健康、快樂。
-
             </div>
 
             <div class="music-control" onclick="toggleMusic()">🎵 背景音樂開關</div>
@@ -201,33 +198,20 @@
     </div>
 
     <script>
-        // 設定照片清單 (請將這裡換成你真實的照片檔名)
-        // 建議找：小時候的照片、全家福、最近的合照
+        // 你的 20 張照片清單
         const photos = [
-            "p1.jpg", 
-            "p2.jpg", 
-            "p3.jpg",
-            "p4.jpg", 
-            "p5.jpg", 
-            "p6.jpg",
-            "p7.jpg", 
-            "p8.jpg", 
-            "p9.jpg",
-            "p10.jpg", 
-            "p11.jpg", 
-            "p12.jpg",
-            "p13.jpg", 
-            "p14.jpg", 
-            "p15.jpg",
-            "p16.jpg", 
-            "p17.jpg", 
-            "p18.jpg",
-            "p19.jpg", 
-            "p20.jpg"            
+            "p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg", "p5.jpg", 
+            "p6.jpg", "p7.jpg", "p8.jpg", "p9.jpg", "p10.jpg", 
+            "p11.jpg", "p12.jpg", "p13.jpg", "p14.jpg", "p15.jpg",
+            "p16.jpg", "p17.jpg", "p18.jpg", "p19.jpg", "p20.jpg"
         ];
-        
-        // 如果你還沒準備照片，程式會用預設圖片，不用擔心報錯
-        
+
+        // 🚀 預先載入邏輯：在看信封時，背景偷偷下載所有照片
+        photos.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+
         let currentPhotoIndex = 0;
         const imgElement = document.getElementById('slideshow-img');
 
@@ -236,15 +220,15 @@
             document.getElementById('main-content').style.display = 'block';
             
             playMusic();
-            fireConfetti(); // 溫和的碎紙花
-            startSlideshow(); // 開始輪播照片
+            fireConfetti();
+            startSlideshow(); 
         }
 
         const audio = document.getElementById('bg-music');
         let isPlaying = false;
 
         function playMusic() {
-            audio.volume = 0.5; // 音量設一半，比較溫柔
+            audio.volume = 0.5;
             audio.play().then(() => { isPlaying = true; })
             .catch(() => console.log("需互動才能播放"));
         }
@@ -254,39 +238,40 @@
             else { audio.play(); isPlaying = true; }
         }
 
-        // 簡單的照片輪播邏輯
         function startSlideshow() {
-            // 如果使用者有放照片進去陣列，才執行輪播
-            if(photos.length > 0 && photos[0] !== "photo1.jpg") {
-                imgElement.src = photos[0]; // 先顯示第一張
+            // 每 3 秒切換一張
+            setInterval(() => {
+                imgElement.style.opacity = 0; // 1. 先淡出
                 
-                setInterval(() => {
+                setTimeout(() => {
+                    // 2. 切換圖片來源
                     currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-                    imgElement.style.opacity = 0; // 淡出
+                    imgElement.src = photos[currentPhotoIndex];
                     
-                    setTimeout(() => {
-                        imgElement.src = photos[currentPhotoIndex];
-                        imgElement.style.opacity = 1; // 淡入
-                    }, 300); // 等待淡出動畫
-                    
-                }, 3000); // 每 3 秒換一張
-            }
+                    // 3. 雙重保險：確認載入完成後再淡入
+                    // 如果是已經快取過的圖片，onload 可能不會觸發，所以加上 complete 判斷
+                    if (imgElement.complete) {
+                         imgElement.style.opacity = 1;
+                    } else {
+                        imgElement.onload = () => {
+                            imgElement.style.opacity = 1;
+                        };
+                    }
+                }, 500); // 淡出動畫時間
+                
+            }, 3000); 
         }
-        
-        // 添加淡入淡出 CSS
-        imgElement.style.transition = "opacity 0.5s ease-in-out";
 
         function fireConfetti() {
             var duration = 3000;
             var end = Date.now() + duration;
-
             (function frame() {
                 confetti({
                     particleCount: 5,
                     angle: 60,
                     spread: 55,
                     origin: { x: 0 },
-                    colors: ['#ff9a9e', '#fad0c4', '#fdfbfb'] // 改成柔和色系
+                    colors: ['#ff9a9e', '#fad0c4', '#fdfbfb']
                 });
                 confetti({
                     particleCount: 5,
@@ -295,7 +280,6 @@
                     origin: { x: 1 },
                     colors: ['#ff9a9e', '#fad0c4', '#fdfbfb']
                 });
-
                 if (Date.now() < end) {
                     requestAnimationFrame(frame);
                 }
