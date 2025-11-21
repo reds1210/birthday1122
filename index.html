@@ -87,6 +87,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
+        /* --- 拍立得相框 (結構修改) --- */
         .polaroid {
             background: white;
             padding: 10px 10px 40px 10px;
@@ -102,14 +103,29 @@
             transform: rotate(0deg) scale(1.02);
         }
 
-        .polaroid img {
+        /* 用來固定高度的容器，確保兩張照片重疊時位置正確 */
+        .photo-wrapper {
+            position: relative;
             width: 100%;
-            height: 220px;
-            object-fit: cover;
+            height: 220px; /* 固定高度 */
+            overflow: hidden;
             background-color: #f8f8f8;
-            border: 1px solid #eee;
-            transition: opacity 0.8s ease-in-out;
         }
+
+        /* 讓兩張照片絕對重疊 */
+        .photo-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 1.5s ease-in-out; /* 延長淡入時間更柔和 */
+        }
+
+        /* 控制顯示與隱藏的 Class */
+        .img-visible { opacity: 1; z-index: 1; }
+        .img-hidden { opacity: 0; z-index: 2; } /* 讓下一張在上面準備 */
 
         h1 {
             color: var(--accent-color);
@@ -149,14 +165,17 @@
     <div class="container">
         <div id="start-screen" onclick="openLetter()">
             <div class="envelope">💌</div>
-            <div class="click-hint">給悅寧的一封信 (點擊開啟)</div>
+            <div class="click-hint">給悅寧的一封信</div>
         </div>
 
         <div id="main-content">
             <div class="tape"></div>
 
             <div class="polaroid">
-                <img id="slideshow-img" src="p1.jpg" alt="Memories">
+                <div class="photo-wrapper">
+                    <img id="img-current" class="img-visible" src="p1.jpg" alt="Memories">
+                    <img id="img-next" class="img-hidden" src="" alt="Next">
+                </div>
             </div>
 
             <h1>Happy Birthday!</h1>
@@ -198,7 +217,7 @@
     </div>
 
     <script>
-        // 你的 20 張照片清單
+        // 你的 20 張照片
         const photos = [
             "p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg", "p5.jpg", 
             "p6.jpg", "p7.jpg", "p8.jpg", "p9.jpg", "p10.jpg", 
@@ -206,14 +225,20 @@
             "p16.jpg", "p17.jpg", "p18.jpg", "p19.jpg", "p20.jpg"
         ];
 
-        // 🚀 預先載入邏輯：在看信封時，背景偷偷下載所有照片
+        // 1. 背景預先載入所有圖片 (Cache)
         photos.forEach(src => {
             const img = new Image();
             img.src = src;
         });
 
-        let currentPhotoIndex = 0;
-        const imgElement = document.getElementById('slideshow-img');
+        // 2. 雙層輪播邏輯
+        let currentIndex = 0;
+        const imgCurrent = document.getElementById('img-current');
+        const imgNext = document.getElementById('img-next');
+        
+        // 標記現在哪一個元素是「可見的」
+        let activeElement = imgCurrent;
+        let hiddenElement = imgNext;
 
         function openLetter() {
             document.getElementById('start-screen').style.display = 'none';
@@ -239,27 +264,41 @@
         }
 
         function startSlideshow() {
-            // 每 3 秒切換一張
             setInterval(() => {
-                imgElement.style.opacity = 0; // 1. 先淡出
-                
-                setTimeout(() => {
-                    // 2. 切換圖片來源
-                    currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-                    imgElement.src = photos[currentPhotoIndex];
+                // 計算下一張圖的 index
+                const nextIndex = (currentIndex + 1) % photos.length;
+                const nextPhotoSrc = photos[nextIndex];
+
+                // A. 把下一張圖，載入到「隱藏的那個 img」標籤裡
+                hiddenElement.src = nextPhotoSrc;
+
+                // B. 等這張圖真的「載入完畢」後，才開始淡入
+                hiddenElement.onload = () => {
+                    // 1. 讓隱藏圖淡入 (變為可見)
+                    hiddenElement.className = 'img-visible';
+                    // 2. 讓原本的圖 (現在在下面) 保持可見，直到上面的圖蓋好
+                    // (這裡不需要動原本的圖，因為它被蓋住了)
                     
-                    // 3. 雙重保險：確認載入完成後再淡入
-                    // 如果是已經快取過的圖片，onload 可能不會觸發，所以加上 complete 判斷
-                    if (imgElement.complete) {
-                         imgElement.style.opacity = 1;
-                    } else {
-                        imgElement.onload = () => {
-                            imgElement.style.opacity = 1;
-                        };
-                    }
-                }, 500); // 淡出動畫時間
-                
-            }, 3000); 
+                    // 3. 交換變數身分
+                    const temp = activeElement;
+                    activeElement = hiddenElement; // 剛剛淡入的變成主角
+                    hiddenElement = temp;          // 剛剛被蓋住的變成配角
+
+                    // 4. 過一秒後，把變成配角的那張圖設為全透明，為下一次做準備
+                    setTimeout(() => {
+                        hiddenElement.className = 'img-hidden';
+                    }, 1500); // 等 CSS transition 跑完
+
+                    // 更新索引
+                    currentIndex = nextIndex;
+                };
+
+                // 如果圖片已經在快取中 (onload 不會觸發)，手動觸發
+                if (hiddenElement.complete) {
+                    hiddenElement.onload();
+                }
+
+            }, 4000); // 每 4 秒換一次
         }
 
         function fireConfetti() {
